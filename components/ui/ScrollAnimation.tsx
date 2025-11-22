@@ -12,7 +12,7 @@ import type { FeaturePosition, FeatureDimension } from '../../lib/types';
 const ScrollAnimation: React.FC = () => {
   useSmoothScroll();
   const containerRef = useRef<HTMLDivElement>(null);
-  const scrollTriggerRef = useRef<ScrollTrigger | null>(null); // Add null as initial value
+  const scrollTriggerRef = useRef<ScrollTrigger | null>(null);
   const searchBarFinalWidthRef = useRef<number>(25);
 
   const getSearchBarFinalWidth = useCallback((): number => {
@@ -72,140 +72,139 @@ const ScrollAnimation: React.FC = () => {
 
       window.addEventListener('resize', handleResize);
 
-      // Create the main animation timeline
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: '.spotlight',
-          start: 'top top',
-          end: `+=${window.innerHeight * 3}`,
-          pin: true,
-          pinSpacing: true,
-          scrub: 1,
-          anticipatePin: 1,
-          onUpdate: (self) => {
-            const progress = self.progress;
+      // Create the ScrollTrigger directly instead of using timeline
+      const scrollTrigger = ScrollTrigger.create({
+        trigger: '.spotlight',
+        start: 'top top',
+        end: `+=${window.innerHeight * 3}`,
+        pin: true,
+        pinSpacing: true,
+        scrub: 1,
+        anticipatePin: 1,
+        onUpdate: (self) => {
+          const progress = self.progress;
 
-            // Spotlight content animation
-            if (progress <= 0.3333) {
-              const spotlightHeaderProgress = progress / 0.3333;
-              gsap.set('.spotlight-content', {
-                y: `${-100 * spotlightHeaderProgress}%`,
+          // Spotlight content animation
+          if (progress <= 0.3333) {
+            const spotlightHeaderProgress = progress / 0.3333;
+            gsap.set('.spotlight-content', {
+              y: `${-100 * spotlightHeaderProgress}%`,
+            });
+          } else {
+            gsap.set('.spotlight-content', {
+              y: '-100%',
+            });
+          }
+
+          // Features animation
+          if (progress >= 0 && progress <= 0.5) {
+            const featureProgress = progress / 0.5;
+
+            features.forEach((feature, index) => {
+              const original = featureStartPositions[index];
+              const currentTop =
+                original.top + (50 - original.top) * featureProgress;
+              const currentLeft =
+                original.left + (50 - original.left) * featureProgress;
+
+              gsap.set(feature, {
+                top: `${currentTop}%`,
+                left: `${currentLeft}%`,
               });
-            } else {
-              gsap.set('.spotlight-content', {
-                y: '-100%',
-              });
-            }
-
-            // Features animation
-            if (progress >= 0 && progress <= 0.5) {
-              const featureProgress = progress / 0.5;
-
-              features.forEach((feature, index) => {
-                const original = featureStartPositions[index];
-                const currentTop =
-                  original.top + (50 - original.top) * featureProgress;
-                const currentLeft =
-                  original.left + (50 - original.left) * featureProgress;
-
-                gsap.set(feature, {
-                  top: `${currentTop}%`,
-                  left: `${currentLeft}%`,
-                });
-              });
-
-              featureBgs.forEach((bg, index) => {
-                const featureDim = featureStartDimensions[index];
-                const currentWidth =
-                  featureDim.width +
-                  (targetWidth - featureDim.width) * featureProgress;
-                const currentHeight =
-                  featureDim.height +
-                  (targetHeight - featureDim.height) * featureProgress;
-                const currentBorderRadius = 0.5 + (25 - 0.5) * featureProgress;
-                const currentBorderWidth = 0.125 + (0.35 - 0.125) * featureProgress;
-
-                gsap.set(bg, {
-                  width: `${currentWidth}px`,
-                  height: `${currentHeight}px`,
-                  borderRadius: `${currentBorderRadius}rem`,
-                  borderWidth: `${currentBorderWidth}rem`,
-                });
-              });
-
-              // Feature text opacity
-              if (progress >= 0 && progress <= 0.1) {
-                const featureTextProgress = progress / 0.1;
-                gsap.set('.feature-content', {
-                  opacity: 1 - featureTextProgress,
-                });
-              } else if (progress > 0.1) {
-                gsap.set('.feature-content', {
-                  opacity: 0,
-                });
-              }
-            }
-
-            // Features container opacity
-            gsap.set('.features', {
-              opacity: progress >= 0.5 ? 0 : 1,
             });
 
-            // Search bar animation
+            featureBgs.forEach((bg, index) => {
+              const featureDim = featureStartDimensions[index];
+              const currentWidth =
+                featureDim.width +
+                (targetWidth - featureDim.width) * featureProgress;
+              const currentHeight =
+                featureDim.height +
+                (targetHeight - featureDim.height) * featureProgress;
+              const currentBorderRadius = 0.5 + (25 - 0.5) * featureProgress;
+              const currentBorderWidth = 0.125 + (0.35 - 0.125) * featureProgress;
+
+              gsap.set(bg, {
+                width: `${currentWidth}px`,
+                height: `${currentHeight}px`,
+                borderRadius: `${currentBorderRadius}rem`,
+                borderWidth: `${currentBorderWidth}rem`,
+              });
+            });
+
+            // Feature text opacity
+            if (progress >= 0 && progress <= 0.1) {
+              const featureTextProgress = progress / 0.1;
+              gsap.set('.feature-content', {
+                opacity: 1 - featureTextProgress,
+              });
+            } else if (progress > 0.1) {
+              gsap.set('.feature-content', {
+                opacity: 0,
+              });
+            }
+          }
+
+          // Features container opacity
+          gsap.set('.features', {
+            opacity: progress >= 0.5 ? 0 : 1,
+          });
+
+          // Search bar animation
+          gsap.set('.search-bar', {
+            opacity: progress >= 0.5 ? 1 : 0,
+          });
+
+          if (progress >= 0.5 && progress <= 0.75) {
+            const searchBarProgress = (progress - 0.5) / 0.25;
+
+            const width = 3 + (searchBarFinalWidthRef.current - 3) * searchBarProgress;
+            const height = 3 + (5 - 3) * searchBarProgress;
+            const translateY = -50 + (200 - -50) * searchBarProgress;
+
             gsap.set('.search-bar', {
-              opacity: progress >= 0.5 ? 1 : 0,
+              width: `${width}rem`,
+              height: `${height}rem`,
+              transform: `translate(-50%, ${translateY}%)`,
             });
 
-            if (progress >= 0.5 && progress <= 0.75) {
-              const searchBarProgress = (progress - 0.5) / 0.25;
+            gsap.set('.search-bar p', {
+              opacity: 0,
+            });
+          } else if (progress > 0.75) {
+            gsap.set('.search-bar', {
+              width: `${searchBarFinalWidthRef.current}rem`,
+              height: '5rem',
+              transform: 'translate(-50%, 200%)',
+            });
+          }
 
-              const width = 3 + (searchBarFinalWidthRef.current - 3) * searchBarProgress;
-              const height = 3 + (5 - 3) * searchBarProgress;
-              const translateY = -50 + (200 - -50) * searchBarProgress;
+          // Final header animation
+          if (progress >= 0.75) {
+            const finalHeaderProgress = (progress - 0.75) / 0.25;
 
-              gsap.set('.search-bar', {
-                width: `${width}rem`,
-                height: `${height}rem`,
-                transform: `translate(-50%, ${translateY}%)`,
-              });
+            gsap.set('.search-bar p', {
+              opacity: finalHeaderProgress,
+            });
 
-              gsap.set('.search-bar p', {
-                opacity: 0,
-              });
-            } else if (progress > 0.75) {
-              gsap.set('.search-bar', {
-                width: `${searchBarFinalWidthRef.current}rem`,
-                height: '5rem',
-                transform: 'translate(-50%, 200%)',
-              });
-            }
-
-            // Final header animation
-            if (progress >= 0.75) {
-              const finalHeaderProgress = (progress - 0.75) / 0.25;
-
-              gsap.set('.search-bar p', {
-                opacity: finalHeaderProgress,
-              });
-
-              gsap.set('.header-content', {
-                y: -50 + 50 * finalHeaderProgress,
-                opacity: finalHeaderProgress,
-              });
-            } else {
-              gsap.set('.search-bar p', {
-                opacity: 0,
-              });
-              gsap.set('.header-content', {
-                y: -50,
-                opacity: 0,
-              });
-            }
-          },
+            gsap.set('.header-content', {
+              y: -50 + 50 * finalHeaderProgress,
+              opacity: finalHeaderProgress,
+            });
+          } else {
+            gsap.set('.search-bar p', {
+              opacity: 0,
+            });
+            gsap.set('.header-content', {
+              y: -50,
+              opacity: 0,
+            });
+          }
         },
       });
 
-      scrollTriggerRef.current = tl.scrollTrigger;
+      // Assign the ScrollTrigger instance to the ref
+      scrollTriggerRef.current = scrollTrigger;
     }, containerRef);
 
     return () => {
