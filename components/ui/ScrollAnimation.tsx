@@ -12,7 +12,7 @@ import type { FeaturePosition, FeatureDimension } from '../../lib/types';
 const ScrollAnimation: React.FC = () => {
   useSmoothScroll();
   const containerRef = useRef<HTMLDivElement>(null);
-  const scrollTriggerRef = useRef<ScrollTrigger>();
+  const scrollTriggerRef = useRef<ScrollTrigger | null>(null); // Add null as initial value
   const searchBarFinalWidthRef = useRef<number>(25);
 
   const getSearchBarFinalWidth = useCallback((): number => {
@@ -210,7 +210,7 @@ const ScrollAnimation: React.FC = () => {
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      ctx.revert(); // This properly cleans up all GSAP animations
+      ctx.revert();
     };
   }, [handleResize, getSearchBarFinalWidth]);
 
