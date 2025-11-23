@@ -1,9 +1,7 @@
 import React from 'react'
 import Dashboard from '@/components/dashboard/Dashboard'
-import { auth, currentUser } from '@clerk/nextjs/server'
 
-const authObj = await auth()
-const userObj = await currentUser()
+
 
 
 export default function page() {
