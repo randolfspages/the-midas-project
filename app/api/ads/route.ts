@@ -20,19 +20,19 @@ export async function GET(request: NextRequest) {
   try {
     console.log('🔍 Fetching ads data...')
 
-    // Check if database is available
+    // Check if database is available with better error handling
     try {
       await prisma.$queryRaw`SELECT 1`
+      console.log('✅ Database connection successful')
     } catch (dbError) {
       console.error('❌ Database connection failed:', dbError)
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Database not available',
-          stats: getFallbackStats()
-        },
-        { status: 500 }
-      )
+      // Return fallback data with proper JSON
+      return NextResponse.json({
+        success: false,
+        error: 'Database not available',
+        stats: getFallbackStats(),
+        ads: []
+      })
     }
 
     // Get all ads with superPAC relations
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 
     console.log(`📊 Found ${ads.length} ads`)
 
-    // Calculate aggregates with error handling
+    // Calculate aggregates with better error handling
     let totalSpend = 0
     let openAISpend = 0
     let metaSpend = 0
@@ -86,17 +86,17 @@ export async function GET(request: NextRequest) {
       metaSpend = metaSpendResult._sum.amount || 0
     } catch (aggregateError) {
       console.error('❌ Error calculating aggregates:', aggregateError)
-      // Use fallback calculations
+      // Use fallback calculations from actual ads
       totalSpend = ads.reduce((sum, ad) => sum + ad.amount, 0)
       openAISpend = ads
-        .filter(ad => ad.superPAC.funder === 'OpenAI+a16z')
+        .filter(ad => ad.superPAC?.funder === 'OpenAI+a16z')
         .reduce((sum, ad) => sum + ad.amount, 0)
       metaSpend = ads
-        .filter(ad => ad.superPAC.funder === 'Meta')
+        .filter(ad => ad.superPAC?.funder === 'Meta')
         .reduce((sum, ad) => sum + ad.amount, 0)
     }
 
-    // Get platform breakdown
+    // Get platform breakdown with error handling
     let platformBreakdown = []
     try {
       const platformResult = await prisma.politicalAd.groupBy({
@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
       }))
     } catch (platformError) {
       console.error('❌ Error calculating platform breakdown:', platformError)
-      // Calculate platform breakdown manually
+      // Calculate platform breakdown manually from ads
       const platformMap = new Map()
       ads.forEach(ad => {
         const existing = platformMap.get(ad.platform) || { spend: 0, count: 0 }
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
       }))
     }
 
-    // Get Super PAC breakdown
+    // Get Super PAC breakdown with error handling
     let superPACBreakdown = []
     try {
       const superPACResult = await prisma.politicalAd.groupBy({
@@ -170,21 +170,23 @@ export async function GET(request: NextRequest) {
       )
     } catch (superPACError) {
       console.error('❌ Error calculating Super PAC breakdown:', superPACError)
-      // Calculate Super PAC breakdown manually
+      // Calculate Super PAC breakdown manually from ads
       const pacMap = new Map()
       ads.forEach(ad => {
-        const key = ad.superPACId
-        const existing = pacMap.get(key) || { 
-          superPAC: ad.superPAC.name, 
-          funder: ad.superPAC.funder, 
-          spend: 0, 
-          count: 0 
+        if (ad.superPAC) {
+          const key = ad.superPACId
+          const existing = pacMap.get(key) || { 
+            superPAC: ad.superPAC.name, 
+            funder: ad.superPAC.funder, 
+            spend: 0, 
+            count: 0 
+          }
+          pacMap.set(key, {
+            ...existing,
+            spend: existing.spend + ad.amount,
+            count: existing.count + 1,
+          })
         }
-        pacMap.set(key, {
-          ...existing,
-          spend: existing.spend + ad.amount,
-          count: existing.count + 1,
-        })
       })
       superPACBreakdown = Array.from(pacMap.values())
     }
@@ -192,6 +194,7 @@ export async function GET(request: NextRequest) {
     // Convert BigInt to Number for JSON serialization and parse metadata
     const serializedAds = ads.map((ad: any) => ({
       ...ad,
+      id: ad.id,
       impressions: ad.impressions ? Number(ad.impressions) : undefined,
       startDate: ad.startDate.toISOString(),
       endDate: ad.endDate ? ad.endDate.toISOString() : undefined,
@@ -199,6 +202,12 @@ export async function GET(request: NextRequest) {
       updatedAt: ad.updatedAt.toISOString(),
       // Parse metadata string back to object for frontend
       metadata: ad.metadata ? safeJsonParse(ad.metadata) : undefined,
+      superPAC: ad.superPAC ? {
+        id: ad.superPAC.id,
+        name: ad.superPAC.name,
+        funder: ad.superPAC.funder,
+        description: ad.superPAC.description,
+      } : null,
     }))
 
     const stats: DashboardStats = {
@@ -221,10 +230,11 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('❌ Failed to fetch ads:', error)
+    // Always return valid JSON, even for errors
     return NextResponse.json(
       { 
         success: false,
-        error: 'Failed to fetch ads',
+        error: 'Failed to fetch ads: ' + (error instanceof Error ? error.message : 'Unknown error'),
         stats: getFallbackStats(),
         ads: []
       },
@@ -268,5 +278,4 @@ function getFallbackStats(): DashboardStats {
   }
 }
 
-// Force dynamic rendering
 export const dynamic = 'force-dynamic'
