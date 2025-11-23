@@ -60,7 +60,7 @@ export default function AnalyticsTab() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between">
-            <div>
+            <div className='space-y-2'>
               <p className="text-sm font-medium text-gray-600">Total Spend</p>
               <p className="text-2xl font-bold text-gray-900">{formatShortAmount(mockAnalytics.overview.totalSpend)}</p>
             </div>
@@ -75,7 +75,7 @@ export default function AnalyticsTab() {
 
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between">
-            <div>
+            <div className='space-y-2'>
               <p className="text-sm font-medium text-gray-600">Total Ads</p>
               <p className="text-2xl font-bold text-gray-900">{mockAnalytics.overview.totalAds}</p>
             </div>
@@ -90,7 +90,7 @@ export default function AnalyticsTab() {
 
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between">
-            <div>
+            <div className='space-y-2'>
               <p className="text-sm font-medium text-gray-600">Engagement Rate</p>
               <p className="text-2xl font-bold text-gray-900">{mockAnalytics.performance.engagement.engagementRate}%</p>
             </div>
@@ -105,7 +105,7 @@ export default function AnalyticsTab() {
 
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between">
-            <div>
+            <div className='space-y-2'>
               <p className="text-sm font-medium text-gray-600">Avg. Daily Spend</p>
               <p className="text-2xl font-bold text-gray-900">{formatShortAmount(mockAnalytics.performance.spending.dailyAvg)}</p>
             </div>
@@ -240,7 +240,7 @@ export default function AnalyticsTab() {
       </div>
 
       {/* Demo Note */}
-      <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
+      {/* <div className="bg-linear-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
         <div className="flex items-center space-x-3">
           <div className="bg-purple-100 p-2 rounded-lg">
             <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,7 +255,7 @@ export default function AnalyticsTab() {
             </p>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }

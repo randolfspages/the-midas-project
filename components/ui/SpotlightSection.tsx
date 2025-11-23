@@ -46,8 +46,8 @@ const SpotlightSection: React.FC = () => {
       </div>
 
       
-      <Link className='search-bar cursor-pointer text-2xl font-bold' href={'/dashboard'}>
-        ACCOUNTABLE &#x2794; 
+      <Link className='search-bar cursor-pointer text-2xl' href={'/dashboard'}>
+        <div>ACCOUNTABLE&#x2794;</div> 
       </Link>
       
     </section>

@@ -223,10 +223,10 @@ function getFallbackStats(): DashboardStats {
         <div className="p-6">
           {activeTab === 'overview' && (
             <PlatformAnalytics
-              platformBreakdown={stats.platformBreakdown}
-              superPACBreakdown={stats.superPACBreakdown || []}
-              crossPlatformAnalysis={stats.crossPlatformAnalysis}
-            />
+                platformBreakdown={stats?.platformBreakdown || []}
+                superPACBreakdown={stats?.superPACBreakdown || []}
+                crossPlatformAnalysis={stats?.crossPlatformAnalysis}
+              />
           )}
 
           {activeTab === 'matrix' && (

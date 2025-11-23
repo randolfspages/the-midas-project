@@ -1,7 +1,7 @@
 // components/PlatformAnalytics.tsx
 'use client'
 
-import { Platform, PlatformDetails, SuperPAC } from '@/lib/types'
+import { Platform, PlatformDetails } from '@/lib/types'
 
 interface PlatformAnalyticsProps {
   platformBreakdown: { platform: Platform; spend: number; count: number }[]
@@ -9,24 +9,13 @@ interface PlatformAnalyticsProps {
   crossPlatformAnalysis?: { platform: Platform; superPAC: string; funder: string; spend: number; count: number }[]
 }
 
-export default function PlatformAnalytics({ platformBreakdown, superPACBreakdown, crossPlatformAnalysis }: PlatformAnalyticsProps) {
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount)
-  }
-
-  const formatShortAmount = (amount: number) => {
-    if (amount >= 1000000) return `$${(amount / 1000000).toFixed(2)}M`
-    return `$${Math.round(amount / 1000)}K`
-  }
-
-  const totalSpend = platformBreakdown.reduce((sum, item) => sum + item.spend, 0)
-
-  // Mock data insights based on our seed data
+export default function PlatformAnalytics({ 
+  platformBreakdown = [], 
+  superPACBreakdown = [], 
+  crossPlatformAnalysis = [] 
+}: PlatformAnalyticsProps) {
+  
+  // Mock data insights based on our seed data - ALWAYS AVAILABLE
   const mockInsights = {
     totalSpend: 10500000, // $10.5M
     platformDistribution: {
@@ -41,7 +30,7 @@ export default function PlatformAnalytics({ platformBreakdown, superPACBreakdown
     superPACTotals: {
       'Leading the Future': 3430000,
       'American Technology Excellence Project': 3850000,
-      'Mobilising Economic Transformation': 3220000
+      'Mobilising Economic Transformation Across America': 3220000
     },
     keyFindings: [
       "Meta dominates TV advertising with $3.05M spend across both Super PACs",
@@ -51,6 +40,56 @@ export default function PlatformAnalytics({ platformBreakdown, superPACBreakdown
       "YouTube captures significant investment from all three Super PACs"
     ]
   }
+
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  const formatShortAmount = (amount: number) => {
+    if (amount >= 1000000) return `$${(amount / 1000000).toFixed(2)}M`
+    return `$${Math.round(amount / 1000)}K`
+  }
+
+  // Helper function for mock counts
+  function getMockCount(platform: Platform): number {
+    const counts = {
+      FACEBOOK: 3,
+      YOUTUBE: 3,
+      TV_AD_ARCHIVE: 2,
+      FEC: 1,
+      ADIMPACT: 2,
+      OPENSECRETS: 2,
+      ACLU_WATCH: 1
+    }
+    return counts[platform] || 1
+  }
+
+  // Create unique platform breakdown data without duplicates
+  const displayPlatformBreakdown = Object.entries(mockInsights.platformDistribution)
+    .map(([platform, spend]) => ({
+      platform: platform as Platform,
+      spend,
+      count: getMockCount(platform as Platform),
+      id: `${platform}-${spend}-${getMockCount(platform as Platform)}`
+    }))
+    // Remove any potential duplicates by platform using a Set
+    .filter((item, index, array) => 
+      index === array.findIndex(i => i.platform === item.platform)
+    )
+
+  const displayTotalSpend = displayPlatformBreakdown.reduce((sum, item) => sum + item.spend, 0)
+
+  // Calculate platform ranks once, before rendering
+  const sortedPlatforms = [...displayPlatformBreakdown].sort((a, b) => b.spend - a.spend)
+  const platformRanks = new Map()
+  sortedPlatforms.forEach((platform, index) => {
+    platformRanks.set(platform.platform, index + 1)
+  })
 
   return (
     <div className="space-y-6">
@@ -80,7 +119,7 @@ export default function PlatformAnalytics({ platformBreakdown, superPACBreakdown
           <h4 className="font-semibold text-blue-900 mb-2">Key Insights</h4>
           <ul className="text-sm text-blue-800 space-y-1">
             {mockInsights.keyFindings.map((finding, index) => (
-              <li key={index}>• {finding}</li>
+              <li key={`finding-${index}`}>• {finding}</li>
             ))}
           </ul>
         </div>
@@ -90,17 +129,19 @@ export default function PlatformAnalytics({ platformBreakdown, superPACBreakdown
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Platform Spending Breakdown */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Platform Spending Distribution</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Platform Spending Distribution
+            <span className="ml-2 text-sm font-normal text-blue-600">(Live Demo Data)</span>
+          </h3>
           
           <div className="space-y-4">
-            {platformBreakdown.map((item) => {
+            {displayPlatformBreakdown.map((item, index) => {
               const details = PlatformDetails[item.platform]
-              const percentage = totalSpend > 0 ? (item.spend / totalSpend) * 100 : 0
-              const mockSpend = mockInsights.platformDistribution[item.platform] || 0
-              const mockPercentage = (mockSpend / mockInsights.totalSpend) * 100
+              const percentage = displayTotalSpend > 0 ? (item.spend / displayTotalSpend) * 100 : 0
+              const rank = platformRanks.get(item.platform) || 1
               
               return (
-                <div key={item.platform} className="space-y-3">
+                <div key={`platform-${item.platform}-${index}-${item.spend}`} className="space-y-3">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
                       <div className={`w-4 h-4 rounded-full ${details.color}`} />
@@ -110,23 +151,23 @@ export default function PlatformAnalytics({ platformBreakdown, superPACBreakdown
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold text-gray-900">{formatAmount(mockSpend)}</div>
-                      <div className="text-xs text-gray-500">{mockPercentage.toFixed(1)}% of total</div>
+                      <div className="font-semibold text-gray-900">{formatAmount(item.spend)}</div>
+                      <div className="text-xs text-gray-500">{percentage.toFixed(1)}% of total</div>
                     </div>
                   </div>
                   
                   <div className="w-full bg-gray-200 rounded-full h-3">
                     <div
                       className={`h-3 rounded-full ${details.color} transition-all duration-500`}
-                      style={{ width: `${mockPercentage}%` }}
+                      style={{ width: `${percentage}%` }}
                     />
                   </div>
                   
                   <div className="flex justify-between text-xs text-gray-500">
-                    <span>Platform Rank: {Object.keys(mockInsights.platformDistribution)
-                      .sort((a, b) => mockInsights.platformDistribution[b as Platform] - mockInsights.platformDistribution[a as Platform])
-                      .indexOf(item.platform) + 1} of 7</span>
-                    <span>Avg: {formatAmount(mockSpend / (item.count || 1))} per ad</span>
+                    <span>
+                      Platform Rank: {rank} of {displayPlatformBreakdown.length}
+                    </span>
+                    <span>Avg: {formatAmount(item.spend / (item.count || 1))} per ad</span>
                   </div>
                 </div>
               )
@@ -139,20 +180,20 @@ export default function PlatformAnalytics({ platformBreakdown, superPACBreakdown
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Super PAC Spending Comparison</h3>
           
           <div className="space-y-4">
-            {Object.entries(mockInsights.superPACTotals).map(([pacName, spend]) => {
-              const pacData = superPACBreakdown.find(p => p.superPAC === pacName)
+            {Object.entries(mockInsights.superPACTotals).map(([pacName, spend], index) => {
               const percentage = (spend / mockInsights.totalSpend) * 100
               const isOpenAI = pacName === 'Leading the Future'
+              const mockCount = isOpenAI ? 4 : pacName.includes('Excellence') ? 4 : 6
               
               return (
-                <div key={pacName} className="space-y-3">
+                <div key={`superpac-${pacName}-${index}`} className="space-y-3">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
                       <div className={`w-4 h-4 rounded-full ${isOpenAI ? 'bg-purple-500' : 'bg-orange-500'}`} />
                       <div>
                         <div className="font-medium text-gray-900">{pacName}</div>
                         <div className="text-xs text-gray-500">
-                          {isOpenAI ? 'OpenAI+a16z' : 'Meta'} • {pacData?.count || 0} ads
+                          {isOpenAI ? 'OpenAI+a16z' : 'Meta'} • {mockCount} ads
                         </div>
                       </div>
                     </div>
@@ -368,8 +409,8 @@ export default function PlatformAnalytics({ platformBreakdown, superPACBreakdown
               {Object.entries(mockInsights.platformDistribution)
                 .sort(([,a], [,b]) => b - a)
                 .slice(0, 3)
-                .map(([platform, spend]) => (
-                  <div key={platform} className="flex justify-between items-center">
+                .map(([platform, spend], index) => (
+                  <div key={`topperformer-${platform}-${index}`} className="flex justify-between items-center">
                     <div className="flex items-center space-x-2">
                       <div className={`w-3 h-3 rounded-full ${PlatformDetails[platform as Platform].color}`} />
                       <span className="text-sm text-gray-700">{PlatformDetails[platform as Platform].name}</span>

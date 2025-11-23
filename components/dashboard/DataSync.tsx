@@ -59,7 +59,7 @@ export default function DataSync({ onSyncComplete }: DataSyncProps) {
         <button
           onClick={handleSync}
           disabled={isSyncing}
-          className="bg-blue-500 text-white rounded font-medium text-sm sm:text-base h-8 px-4 cursor-pointer hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
         >
           {isSyncing ? 'Syncing...' : 'Sync Now'}
         </button>

@@ -35,11 +35,11 @@ export default function DemoSummary() {
         </div>
       </div>
 
-      <div className="mt-4 p-3 bg-blue-100 rounded-md">
+      {/* <div className="mt-4 p-3 bg-blue-100 rounded-md">
         <p className="text-sm text-blue-800">
           <strong>Note:</strong> This is demonstration data showing how the platform tracks Super PAC spending across multiple advertising platforms in real-time. Check the "Spending Matrix" tab for detailed breakdowns.
         </p>
-      </div>
+      </div> */}
     </div>
   )
 }

@@ -125,18 +125,3 @@ export function stringifyMetadata(metadata?: any): string | undefined {
     return undefined
   }
 }
-
-export interface FeaturePosition {
-  top: number;
-  left: number;
-}
-
-export interface FeatureDimension {
-  width: number;
-  height: number;
-}
-
-export interface Feature {
-  name: string;
-  link: string;
-}
