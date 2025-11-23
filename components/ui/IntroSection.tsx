@@ -7,7 +7,7 @@ const IntroSection: React.FC = () => {
     <section className="intro">
       <div className='flex flex-col items-center space-y-1'>
       <div>
-        <Image src={'/midas-logo.png'} width={100} height={100} alt='logo'/>
+        <Image src={'/midas-logo.png'} width={100} height={100} alt='logo' preload={true} loading='eager'/>
       </div>
         <span className={ibmPlexSerifBold.className}>THE MIDAS PROJECT</span>
       </div>

@@ -27,10 +27,11 @@ const SpotlightSection: React.FC = () => {
 
       <div className="header">
         <div className="header-content">
-          <h1 className=''>With Our AI Super PACs Tracker (ASPACT)</h1>
+          <h1 className=''>WELCOME TO THE ASPACT APPLICATION</h1>
           <p>
             Discover a Realtime Transparency into the AI Political Spending
           </p>
+          <span>click below to check out</span>
         </div>
       </div>
 

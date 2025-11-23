@@ -8,8 +8,8 @@ export default function Navigation() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between h-16">
                 <div className="flex items-center">
-                  <Link href={'/'} className="text-md font-bold text-gray-900">
-                    AI Political Ad Tracker
+                  <Link href={'/'}>
+                    <span className="text-lg font-bold text-gray-900">&#923;SP&#923;CT<span className='text-xs font-light italic'>AI Super PAC Ads Tracking Project</span></span>
                   </Link>
                 </div>
                 <div className="flex items-center space-x-4">
