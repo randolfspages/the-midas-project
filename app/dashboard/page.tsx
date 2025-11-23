@@ -4,9 +4,11 @@ import { auth, currentUser } from '@clerk/nextjs/server'
 
 const authObj = await auth()
 const userObj = await currentUser()
-console.log(userObj, authObj)
+
 
 export default function page() {
+
+  
   return (
    <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 pt-20">
       <div className="px-4 py-6 sm:px-0">
